@@ -4,7 +4,7 @@ package dede.ugurcan.dovizKuru;
  * @author: Ugurcan Dede
  * @date: 21.12.2019
  * @description: Exchange converter using exchangeratesapi.io by Ugurcan Dede
- * @project-url: https://github.com/ugurcandede/Döviz Kuru
+ * @project-url: https://github.com/ugurcandede/DovizKuruCevirici
  */
 
 
