@@ -38,12 +38,12 @@ import java.util.Calendar;
 public class MainActivity extends AppCompatActivity {
     Button btnHistory;
     DatePickerDialog picker;
-    EditText edtTextIlkDate, edtTextSonDate;
+    EditText edtTextIlkDate, edtKurDegeri;
     String baslangıcTarihi, bitisTarihi;
 
     Spinner bazKurSpn, cevirilenKurSpn;
     EditText edtBazKur;
-    TextView txvSonuc, textView2;
+    TextView txwKurDegeri;
     String[] birimler = {"CAD", "HKD", "ISK", "PHP", "DKK", "HUF", "CZK", "GBP", "RON", "SEK",
             "IDR", "INR", "BRL", "RUB", "HRK", "JPY", "THB", "CHF", "EUR", "MYR", "BGN", "TRY",
             "CNY", "NOK", "NZD", "ZAR", "USD", "MXN", "SGD", "AUD", "ILS", "KRW", "PLN"};
@@ -56,12 +56,13 @@ public class MainActivity extends AppCompatActivity {
         bazKurSpn = (Spinner) findViewById(R.id.spnBazKur);
         cevirilenKurSpn = (Spinner) findViewById(R.id.spnCevirilecekKur);
         edtBazKur = findViewById(R.id.edtBazKur);
-        txvSonuc = findViewById(R.id.txvCevirilenKur);
-        textView2 = findViewById(R.id.textView2);
+        edtKurDegeri = findViewById(R.id.edtKurDegeri);
+        txwKurDegeri = findViewById(R.id.txwKurDegeri);
 
         btnHistory = findViewById(R.id.historyButton);
         edtTextIlkDate = findViewById(R.id.edtTextIlkDate);
         edtTextIlkDate.setInputType(InputType.TYPE_NULL);
+        edtKurDegeri.setInputType(InputType.TYPE_NULL);
 
         /**
          * Baz kur Spinner
@@ -104,37 +105,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void verileriGetir(View v) {
-        if ("".equals(edtBazKur.getText().toString())) {
-            Toast.makeText(getApplicationContext(), "Parasal Değer Girin", Toast.LENGTH_SHORT).show();
+        if (bazKurSpn.getSelectedItem().toString() == cevirilenKurSpn.getSelectedItem().toString()) {
+            Toast.makeText(getApplicationContext(), "Lüften Para Birimlerini Kontrol Edin", Toast.LENGTH_SHORT).show();
+            // edtKurDegeri.setText(edtBazKur.getText().toString() + " " + cevirilenKurSpn.getSelectedItem().toString());
         } else {
-            DownloadData downloadData = new DownloadData();
-            try {
+            if ("".equals(edtBazKur.getText().toString())) {
+                Toast.makeText(getApplicationContext(), "Parasal Değer Girin", Toast.LENGTH_SHORT).show();
+            } else {
+                DownloadData downloadData = new DownloadData();
+                try {
 
-                String url = "https://api.exchangeratesapi.io/latest?base=" + bazKurSpn.getSelectedItem().toString();
-                downloadData.execute(url);
-                //System.out.println("URL: " + url);
+                    String url = "https://api.exchangeratesapi.io/latest?base=" + bazKurSpn.getSelectedItem().toString();
+                    downloadData.execute(url);
+                    //System.out.println("URL: " + url);
 
-            } catch (Exception e) {
-                e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
     public void eskiVerileriGetir(View v) {
-        if ("".equals(edtTextIlkDate.getText().toString()) || "".equals(edtBazKur.getText().toString())) {
-            Toast.makeText(getApplicationContext(), "Lütfen Tarih ve Parasal Değeri Kontrol Edin", Toast.LENGTH_SHORT).show();
+        if ("".equals(edtBazKur.getText().toString())) {
+            Toast.makeText(getApplicationContext(), "Parasal Değer Girin", Toast.LENGTH_SHORT).show();
         } else {
-            DownlodHistoryData downloadHistoryData = new DownlodHistoryData();
-            try {
-                String url = "https://api.exchangeratesapi.io/history?start_at=" + baslangıcTarihi + "&end_at=" + bitisTarihi + "&base=" + bazKurSpn.getSelectedItem().toString();
-                downloadHistoryData.execute(url);
-                //System.out.println("URL: " + url);
+            if ("".equals(edtTextIlkDate.getText().toString())) {
+                Toast.makeText(getApplicationContext(), "Lütfen Tarihi Kontrol Edin", Toast.LENGTH_SHORT).show();
+            } else {
+                DownlodHistoryData downloadHistoryData = new DownlodHistoryData();
+                try {
+                    String url = "https://api.exchangeratesapi.io/history?start_at=" + baslangıcTarihi + "&end_at=" + bitisTarihi + "&base=" + bazKurSpn.getSelectedItem().toString();
+                    downloadHistoryData.execute(url);
+                    //System.out.println("URL: " + url);
 
-            } catch (Exception e) {
-                e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
+
 
     private class DownlodHistoryData extends AsyncTask<String, Void, String> {
         @Override
@@ -192,9 +203,9 @@ public class MainActivity extends AppCompatActivity {
                 Double historyHesapla = (doubleBazKur * doubleHistoryKur);
                 NumberFormat formatter = new DecimalFormat("#0.000");
                 System.out.println(formatter.format(historyHesapla) + " " + cevirilenKurSpn.getSelectedItem().toString());
-                textView2.setVisibility(View.VISIBLE);
-                textView2.setText(baslangıcTarihi + "\nTarihinde Kur Değeri");
-                txvSonuc.setText(formatter.format(historyHesapla) + " " + cevirilenKurSpn.getSelectedItem().toString());
+                txwKurDegeri.setVisibility(View.VISIBLE);
+                txwKurDegeri.setText(baslangıcTarihi + " Tarihindeki Kur Değeri");
+                edtKurDegeri.setText(formatter.format(historyHesapla) + " " + cevirilenKurSpn.getSelectedItem().toString());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -229,7 +240,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
                 return null;
             }
-
         }
 
         @Override
@@ -256,9 +266,10 @@ public class MainActivity extends AppCompatActivity {
 
                 Double hesapla = (DoubleBazKur * DoubleGuncelKur);
                 NumberFormat formatter = new DecimalFormat("#0.000");
+                txwKurDegeri.setText("Güncel Kur Değeri");
+                edtKurDegeri.setText(formatter.format(hesapla) + " " + cevirilenKurSpn.getSelectedItem().toString());
                 //System.out.println(formatter.format(hesapla) + " " + cevirilenKurSpn.getSelectedItem().toString());
-                txvSonuc.setText(formatter.format(hesapla) + " " + cevirilenKurSpn.getSelectedItem().toString());
-                textView2.setVisibility(View.VISIBLE);
+                txwKurDegeri.setVisibility(View.VISIBLE);
 
             } catch (Exception e) {
                 e.printStackTrace();
